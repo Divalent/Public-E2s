@@ -1,0 +1,357 @@
+@name Minecraft
+@inputs [Pod Cam]:wirelink 
+@outputs 
+@persist AngI BlockMat Anim_shoot Materials:array 
+@model models/sprops/cylinders/size_3/cylinder_6x18.mdl
+runOnTick(1)
+runOnChat(1)
+
+E = entity()
+
+local Seat = Pod["Entity",entity]
+local Bea = Pod["Bearing", number]
+local Ele = Pod["Elevation", number]
+local Prev = Pod["PrevWeapon", number]
+local Next = Pod["NextWeapon", number]
+local Driver = Seat:driver()
+local Active = Driver:isPlayer()
+local W = Driver:keyForward()
+local A = Driver:keyLeft()
+local S = Driver:keyBack()
+local D = Driver:keyRight()
+local Space = Driver:keyJump()
+local Shift = Driver:keySprint()
+local Ctrl = Driver:keyDuck()
+local Mouse1 = Driver:keyAttack1()
+local Mouse2 = Driver:keyAttack2()
+Cam["Activated", number] = Active
+
+if (first() | dupefinished()) {
+    E:setMass(251)
+    E:setAlpha(0)
+    E:propFreeze(0)
+    
+    holoCreate(0)
+    holoMaterial(0,"models/wireframe")
+    
+    holoCreate(1)
+    holoPos(1,E:toWorld(vec(0,0,12)))
+    holoScale(1,vec(0.1))
+    holoAlpha(1,0)
+    holoParent(1,E)
+    
+    Cam["Parent", entity] = holoEntity(1)
+    Cam["Position", vector] = holoEntity(1):pos()
+    
+    # Head Hinge
+    holoCreate(2)
+    holoPos(2,E:toWorld(vec(0,0,8)))
+    holoScale(2,vec(0.01,0.01,0.01))
+    holoParent(2,E)
+    
+    # Right Arm Hinge
+    holoCreate(3)
+    holoPos(3,E:toWorld(vec(0,-3.3,7.2)))
+    holoScale(3,vec(0.01,0.01,0.01))
+    holoParent(3,E)
+    
+    # Left Arm Hinge
+    holoCreate(4)
+    holoPos(4,E:toWorld(vec(0,3.3,7.2)))
+    holoScale(4,vec(0.01,0.01,0.01))
+    holoParent(4,E)
+    
+    # Right Leg Hinge
+    holoCreate(5)
+    holoPos(5,E:toWorld(vec(0,-1.5,-1.8)))
+    holoScale(5,vec(0.01,0.01,0.01))
+    holoParent(5,E)
+    
+    # Left Leg Hinge
+    holoCreate(6)
+    holoPos(6,E:toWorld(vec(0,1.5,-1.8)))
+    holoScale(6,vec(0.01,0.01,0.01))
+    holoParent(6,E)
+    
+    for (Al = 2,6) {holoAlpha(Al,0)}
+    
+    # Head
+    holoCreate(7)
+    holoPos(7,E:toWorld(vec(0,0,11)))
+    holoScale(7,vec(0.55,0.55,0.5))
+    holoParent(7,2)
+    holoColor(7,vec(200,140,100))
+    
+    # Torso
+    holoCreate(8)
+    holoPos(8,E:toWorld(vec(0,0,3)))
+    holoScale(8,vec(0.3,0.55,0.8))
+    holoParent(8,E)
+    holoColor(8,vec(0,255,255))
+    
+    # Right Shoulder
+    holoCreate(9)
+    holoPos(9,E:toWorld(vec(0,-5.1,6)))
+    holoScale(9,vec(0.3,0.3,0.3))
+    holoParent(9,3)
+    holoColor(9,vec(0,255,255))
+    
+    # Right Forarm
+    holoCreate(10)
+    holoPos(10,E:toWorld(vec(0,-5.1,0.6)))
+    holoScale(10,vec(0.3,0.3,0.6))
+    holoParent(10,9)
+    holoColor(10,vec(200,140,100))
+    
+    # Left Shoulder
+    holoCreate(11)
+    holoPos(11,E:toWorld(vec(0,5.1,6)))
+    holoScale(11,vec(0.3,0.3,0.3))
+    holoParent(11,4)
+    holoColor(11,vec(0,255,255))
+    
+    # Left Forarm
+    holoCreate(12)
+    holoPos(12,E:toWorld(vec(0,5.1,0.59)))
+    holoScale(12,vec(0.3,0.3,0.6))
+    holoParent(12,11)
+    holoColor(12,vec(200,140,100))
+    
+    # Right Leg
+    holoCreate(13)
+    holoPos(13,E:toWorld(vec(0,-1.51,-5.7)))
+    holoScale(13,vec(0.3,0.3,0.65))
+    holoParent(13,5)
+    holoColor(13,vec(40,40,210))
+    
+    # Right Foot
+    holoCreate(14)
+    holoPos(14,E:toWorld(vec(0,-1.51,-9.4)))
+    holoScale(14,vec(0.32,0.32,0.1))
+    holoParent(14,13)
+    holoColor(14,vec(90,90,90))
+    
+    # Left Leg
+    holoCreate(15)
+    holoPos(15,E:toWorld(vec(0,1.51,-5.7)))
+    holoScale(15,vec(0.3,0.3,0.65))
+    holoParent(15,6)
+    holoColor(15,vec(40,40,210))
+    
+    # Left Foot
+    holoCreate(16)
+    holoPos(16,E:toWorld(vec(0,1.51,-9.4)))
+    holoScale(16,vec(0.32,0.32,0.1))
+    holoParent(16,15)
+    holoColor(16,vec(90,90,90))
+    
+    # RightRR Eye
+    holoCreate(17)
+    holoPos(17,E:toWorld(vec(3,-2,11)))
+    holoScale(17,vec(0.06))
+    holoParent(17,7)
+    
+    # RightR Eye
+    holoCreate(18)
+    holoPos(18,E:toWorld(vec(3,-1.3,11)))
+    holoScale(18,vec(0.06))
+    holoParent(18,7)
+    holoColor(18,vec(0,0,255))
+    
+    # LeftLL Eye
+    holoCreate(19)
+    holoPos(19,E:toWorld(vec(3,2,11)))
+    holoScale(19,vec(0.06))
+    holoParent(19,7)
+    
+    # LeftL Eye
+    holoCreate(20)
+    holoPos(20,E:toWorld(vec(3,1.3,11)))
+    holoScale(20,vec(0.06))
+    holoParent(20,7)
+    holoColor(20,vec(0,0,255))
+    
+    # Hair1
+    holoCreate(21)
+    holoPos(21,E:toWorld(vec(0,0,13.35)))
+    holoScale(21,vec(0.56,0.56,0.12))
+    holoParent(21,7)
+    holoColor(21,vec(20,14,10))
+    
+    # Hair2
+    holoCreate(22)
+    holoPos(22,E:toWorld(vec(-1,0,12.27)))
+    holoScale(22,vec(0.4,0.56,0.3))
+    holoParent(22,7)
+    holoColor(22,vec(20,14,10))
+    
+    # Hair3
+    holoCreate(23)
+    holoPos(23,E:toWorld(vec(0.97,-2.75,12.27)))
+    holoScale(23,vec(0.4,0.1,0.1))
+    holoParent(23,7)
+    holoColor(23,vec(20,14,10))
+    
+    # Hair3
+    holoCreate(24)
+    holoPos(24,E:toWorld(vec(0.97,2.75,12.27)))
+    holoScale(24,vec(0.4,0.1,0.1))
+    holoParent(24,7)
+    holoColor(24,vec(20,14,10))
+    
+    # Optional Mouth
+    holoCreate(25)
+    holoPos(25,E:toWorld(vec(3,0,9)))
+    holoScale(25,vec(0.06,0.16,0.012))
+    holoParent(25,7)
+    holoColor(25,vec(0))
+    
+    # Hand Block
+    holoCreate(100)
+    holoPos(100,E:toWorld(vec(1,-5.1,-4)))
+    holoAng(100,E:toWorld(ang(30,0,0)))
+    holoScale(100,vec(0.32,0.32,0.32))
+    holoParent(100,10)
+    
+    # Crosshair
+    holoCreate(101)
+    holoModel(101,"hq_sphere")
+    holoAng(101,E:toWorld(ang(0,0,0)))
+    holoDisableShading(101,1)
+    holoScale(101,vec(0.1,0.1,0.1))
+    
+    Materials[1,string]="models/props/CS_militia/roofbeams01"
+    Materials[2,string]="phoenix_storms/wood"
+    Materials[3,string]="models/props_wasteland/lighthouse_stairs"
+    Materials[4,string]="models/props_pipes/GutterMetal01a"
+    Materials[5,string]="models/gibs/metalgibs/metal_gibs"
+    Materials[6,string]="models/props_c17/furniturefabric001a"
+    Materials[7,string]="models/props_combine/health_charger_glass"
+    Materials[8,string]="models/props_debris/concretewall019a"
+    Materials[9,string]="models/props_c17/metalladder003"
+    Materials[10,string]="models/props_c17/frostedglass_01a"
+    Materials[11,string]="models/props/de_inferno/infflrd"
+    Materials[12,string]="models/props/de_inferno/infflra"
+    Materials[13,string]="phoenix_storms/ps_grass"
+}
+
+# Prop Removing
+if (chatClk(owner()) & owner():lastSaid():lower():find("!r")) {
+    hideChat(1)
+    
+    findByModel("models/hunter/blocks/cube025x025x025.mdl") 
+    findIncludePlayerProps(owner())   
+    Props = findToArray()
+    
+    Props:propDelete()
+}
+
+# Hide Head Holos
+if (Active) {
+    for (H = 17,25) {holoVisible(H,Driver,0)}
+    
+    holoVisible(101,players(),0)
+    holoVisible(101,Driver,1)
+    
+    holoAlpha(100,255)
+} else {
+    for (H = 17,25) {holoVisible(H,players(),1)}
+    
+    holoVisible(101,players(),0)
+    
+    holoAlpha(100,0)
+}
+
+# Movement
+rangerFilter(players())
+R = rangerOffsetHull(E:pos(),E:pos() - vec(0,0,10),E:boxSize())
+Pos = R:position() + vec(0,0,3)
+
+rangerFilter(E)
+R2 = rangerOffset(9999,entity():pos(),Driver:eye())
+
+Yaw = (R2:position() - entity():pos()):toAngle():yaw()
+
+if (changed(Space) & Space & R:hit()) {E:applyForce(E:up() * E:mass() * 158)}
+
+if (R:hit() & !Space) {
+    Vec = (Pos - E:pos())*5
+    Z = ((Vec-E:vel())*E:mass()):z()
+    E:applyForce((vec(0,0,Z) - E:vel()) + E:forward() * (W-S) * E:mass() * (4 + Shift * 2) + E:right() * (D-A) * E:mass() * 3 - E:vel() * 15)
+}
+
+E:applyAngForce((E:toLocal(ang(0,Yaw + 90,0))*200 - E:angVel()*20) * shiftL(ang(E:inertia())))
+
+# Building
+ViewA = ang(0,Bea,Ele)
+
+rangerFilter(players())
+R3 = rangerOffset(100,holoEntity(1):pos(),-ViewA:right())
+
+if (Active & R3:entity():type() == "prop_physics") {
+    holoPos(0,R3:entity():pos() + R3:hitNormal() * 11.75)
+    holoAlpha(0,255)
+    holoAlpha(101,100)
+}
+
+elseif (Active & R3:hitWorld()) {
+    holoPos(0,round(R3:pos() / 11.75) * 11.75 - vec(0,0,8))
+    holoAlpha(0,255)
+    holoAlpha(101,100)
+}
+
+elseif (!R3:hitWorld()) {
+    holoAlpha(0,0)
+    holoAlpha(101,0)
+}
+
+BlockMat = clamp(BlockMat,1,Materials:count())
+
+if (changed(Next) & Next) {BlockMat++}
+if (changed(Prev) & Prev) {BlockMat--}
+
+holoMaterial(100,Materials[BlockMat, string])
+
+if (changed(Mouse1) & Mouse1 & Driver == owner()) {
+    Anim_shoot = 40
+    
+    propSpawnEffect(0)
+    propSpawn("models/hunter/blocks/cube025x025x025.mdl",holoEntity(0):pos(),ang(0,0,0),1):setMaterial(Materials[BlockMat, string])
+}
+
+if (changed(Mouse2) & Mouse2 & R3:entity():model():sub(0,20) == "models/hunter/blocks") {R3:entity():propDelete()}
+
+# Crosshair
+holoPos(101,R3:pos())
+
+# Animations
+Yaw = Driver:eyeAngles():yaw()
+Pitch = clamp(Driver:eyeAngles():pitch(),-25,25)
+
+holoAng(2,ang(Pitch,Yaw + 90,0))
+
+Speed = clamp((-R:entity():vel() + E:vel()):length()/40,0,3.5)
+AngI += (Speed / 0.25)
+WalkAnim = ang(sin(AngI) * 90,0,0) * Speed * 0.3
+Anim_shoot = max(Anim_shoot - 2,0)
+
+if (Speed > 0.4) {
+    holoAng(3,holoEntity(8):angles()+WalkAnim)
+    holoAng(4,holoEntity(8):angles()-WalkAnim)
+    holoAng(5,holoEntity(8):angles()+WalkAnim)
+    holoAng(6,holoEntity(8):angles()-WalkAnim)
+} else {
+    for (Angs = 3,6) {holoAng(Angs,E:toWorld(ang(0,0,0)))}
+}
+
+if (Active) {holoAng(3,E:toWorld(ang(Anim_shoot - 40,0,0)))}
+
+# Controls
+if (changed(Active) & Active) {
+    Seat:printDriver("W, A, S, and D to move around.")
+    Seat:printDriver("Space to jump.")
+    Seat:printDriver("Scroll up and down to change materials.")
+    Seat:printDriver("Left mouse button to place blocks.")
+    Seat:printDriver("Right mouse button to remove blocks.")
+    Seat:printDriver("Type !r to remove all spawned blocks.")
+}
