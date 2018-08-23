@@ -1,0 +1,215 @@
+@name DivalentsPropToHolo
+@inputs 
+@outputs 
+@persist Props:array [Ply Base]:entity [Name Path Text Weapon Type Material Color]:string Size:vector 
+@persist BaseSelected Ready N AreaSelect 
+@trigger 
+interval(100)
+
+if (first()) {
+    
+    runOnChat(1)
+    runOnLast(1)
+    
+    AreaSelect = 1
+    
+    N = -1
+    BaseSelected = 0
+    Size = vec(1)
+    
+    Props = array()
+    Ply = owner()
+    Weapon = "weapon_crowbar"
+    Type = "prop_physics"
+    
+    function number hasEnt(R:array,E:entity) {
+        
+        for (I = 1, R:count(), 1) {
+            
+            if (R[I,entity] == E) {
+                
+                return I
+                
+            }
+            
+        }
+        
+        return 0
+        
+    }
+    
+}
+
+    if (Ply:weapon():type() == Weapon & changed(Ply:keyUse()) & Ply:keyUse() & Ply:aimEntity():type() == Type & BaseSelected == 0) {
+        
+        Ply:aimEntity():setAlpha(100)
+        
+        Base = Ply:aimEntity()
+        
+        BaseSelected = 1
+        
+        print("Base selected.")
+        
+    } elseif (Ply:weapon():type() == Weapon & changed(Ply:keyUse()) & Ply:keyUse() & Ply:aimEntity():type() == Type & BaseSelected == 1 & Ply:aimEntity() != Base) {
+        
+        if (hasEnt(Props,Ply:aimEntity()) == 0) {
+            
+            Props:pushEntity(Ply:aimEntity())
+            
+            Ply:aimEntity():setAlpha(100)
+            
+            print("Prop(s) selected: " + Props:count())
+            
+        }
+        
+    }
+    
+    if (changed(Ply:keyWalk()) & Ply:keyWalk() & Ply:aimEntity():type() == Type) {
+        
+        if (Ply:aimEntity() == Base) {
+            
+            Base = entity()
+            
+            BaseSelected = 0
+            
+            Ply:aimEntity():setAlpha(255)
+            
+            print("Base unselected.")
+            
+        } else {
+            
+            Props:removeEntity(hasEnt(Props,Ply:aimEntity()))
+            
+            Ply:aimEntity():setColor(vec4(255,255,255,255))
+            
+            print("Prop(s) selected: " + Props:count())
+            
+        }
+        
+    }
+
+if (AreaSelect == 1 & changed(BaseSelected == 1) & BaseSelected == 1) {
+    
+    findIncludePlayerProps("Hardkiller")
+    findByClass("prop_physics")
+    Props = findToArray()
+    
+    for (I = 1, Props:count()) {
+        
+        Props[I, entity]:setAlpha(100)
+        
+    }
+    
+}
+
+if (chatClk(owner())) {
+    
+    if (owner():lastSaid():explode(" "):string(1) == "!save") {
+        
+        hideChat(1)
+        
+        print("Saving...")
+        
+        for (I = 1,Props:count()) {
+            
+            Props[I,entity]:setAlpha(255)
+            
+        }
+        
+        Base:setAlpha(255)
+        
+        if (entity():isValid()) {
+            
+            Name = owner():lastSaid():sub(7)
+            Path = ">e2shared/Holograms/"+Name+".txt"
+            
+Text = "@name "+Name+"
+@inputs 
+@outputs 
+@persist E:entity I M Scale:vector 
+interval(100)
+
+if (first() | dupefinished()) {
+    
+    M = "+Props:count()+"
+    E = entity():isWeldedTo()
+    
+    Scale = vec(1)
+    
+    holoCreate(0)
+    holoPos(0, E:toWorld(vec(0, 0, 0)))
+    holoAng(0, E:toWorld(ang(0, 90, 0)))
+    holoAlpha(0, 0)
+    holoParent(0, E)
+    
+}
+
+if (I < M & holoCanCreate()) {
+    
+    I++
+    
+    holoCreate(I)
+    holoParent(I, 0)
+"
+            
+            fileWrite(Path,Text)
+            
+            N = 0
+            Ready = 0
+            
+        }
+    }
+}
+
+if (N >= 0 && Ready == 0) { timer("N", 200) }
+
+if (clk("N")) {
+    
+    N += 1
+    
+    Prop = Props[N,entity]
+    
+    if (Prop:getMaterial() == "\"\"") {Material = ""} else {Material = "\""+Prop:getMaterial()+"\""}
+    
+    if (Prop:getAlpha() == 100) {Color = "vec(255, 255, 255)"}
+    else {Color = "vec("+toString(Prop:getColor()):replace("[",""):replace("]",")")}
+    
+    fileAppend(Path,"
+    holoModel("+N+", \""+Prop:model()+"\")
+    holoMaterial("+N+", "+Material+")
+    holoPos("+N+", E:toWorld(vec("+round((Prop:pos():x()-Base:pos():x())*Size:x(),4)+", "+round((Prop:pos():y()-Base:pos():y())*Size:y(),4)+", "+round((Prop:pos():z()-Base:pos():z())*Size:z(),4)+")*Scale))
+    holoAng("+N+", E:toWorld(ang("+round(Prop:angles():pitch(),4)+", "+round(Prop:angles():yaw(),4)+", "+round(Prop:angles():roll(),4)+")))
+    holoColor("+N+", "+Color+")
+    holoScale("+N+", Scale)\n"
+    )
+    
+    #print("Hologram "+N+" Created.")
+    
+    if (N == Props:count()) {
+        
+        timer("done", 600)
+        stoptimer("N")
+        
+        N = -1
+        
+    }
+    
+}
+
+if (clk("done")) {
+    
+    fileAppend(">e2shared/Holograms/"+Name+".txt","\n}")
+        
+    print("\""+Name+"\" saved.")
+    
+    Ready = 1
+    
+    BaseSelected = 0
+    
+}
+
+if (last()) {
+    
+    for (I = 1, Props:count()) { Props[I, entity]:setAlpha(255) }
+    
+}
